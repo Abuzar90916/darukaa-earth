@@ -1,0 +1,4 @@
+#!/bin/sh
+# Frontend: eslint + prettier on staged JS/TS. Backend: ruff on staged Python
+# (skipped automatically when ruff is not installed locally).
+npx lint-staged

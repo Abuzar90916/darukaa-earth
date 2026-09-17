@@ -1,0 +1,41 @@
+# Render blueprint for the DARUKAA.EARTH FastAPI service.
+#
+# The database is NOT created here: the service connects to the existing
+# PostgreSQL + PostGIS instance through DATABASE_URL. Every value marked
+# `sync: false` must be filled in from the Render dashboard — no secret is
+# committed to this repository.
+services:
+  - type: web
+    name: darukaa-api
+    runtime: python
+    plan: starter
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: ENVIRONMENT
+        value: production
+      # Connection string of the existing PostGIS database.
+      - key: DATABASE_URL
+        sync: false
+      # JWT verification: set the shared secret, or JWT_JWKS_URL for asymmetric keys.
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_AUDIENCE
+        value: authenticated
+      - key: JWT_JWKS_URL
+        sync: false
+      # Auth server used by /api/auth/login and /api/auth/register.
+      - key: AUTH_BASE_URL
+        sync: false
+      - key: AUTH_ANON_KEY
+        sync: false
+      # Comma-separated list of allowed browser origins (the deployed frontend).
+      - key: CORS_ORIGINS
+        sync: false
