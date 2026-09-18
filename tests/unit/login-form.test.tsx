@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -18,8 +19,8 @@ const { navigate, signIn, signUp, signInWithOAuth, auth } = vi.hoisted(() => {
 
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => navigate }));
 vi.mock("@/lib/auth", () => ({ useAuth: () => auth }));
-vi.mock("@/integrations/lovable/index", () => ({
-  lovable: { auth: { signInWithOAuth } },
+vi.mock("@/integrations/supabase/client", () => ({
+  supabase: { auth: { signInWithOAuth } },
 }));
 
 beforeEach(() => {
@@ -102,13 +103,16 @@ describe("sign-in behaviour", () => {
   });
 
   it("starts Google sign-in through the managed OAuth helper", async () => {
-    signInWithOAuth.mockResolvedValue({ error: null, redirected: true });
+    signInWithOAuth.mockResolvedValue({ error: null });
     render(<AuthScreen />);
     await userEvent.setup().click(screen.getByRole("button", { name: /continue with google/i }));
 
     await waitFor(() =>
-      expect(signInWithOAuth).toHaveBeenCalledWith("google", {
-        redirect_uri: window.location.origin,
+      expect(signInWithOAuth).toHaveBeenCalledWith({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin,
+        },
       }),
     );
   });

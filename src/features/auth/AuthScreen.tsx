@@ -2,12 +2,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
 
-import earthPoster from "@/assets/login-earth-poster.jpg.asset.json";
-import earthVideo from "@/assets/login-earth-rotating.mp4.asset.json";
+import loginBg from "@/assets/login-reference-wide.jpg";
 import { BrandMark } from "@/components/BrandMark";
 import { GlassPanel } from "@/components/glass/GlassPanel";
 import { Button } from "@/components/ui/button";
-import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -48,16 +47,19 @@ export function AuthScreen() {
     setNotice(null);
     setGoogleBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin,
+        },
       });
-      if (result.error) {
+      if (error) {
         setError("We couldn't sign you in with Google. Please try again.");
         setGoogleBusy(false);
         return;
       }
-      // Redirected flows leave the page; token flows land here already signed in.
-      if (result.redirected) return;
+      // Redirected flows leave the page.
+      return;
     } catch {
       setError("We couldn't sign you in with Google. Please try again.");
       setGoogleBusy(false);
@@ -103,15 +105,10 @@ export function AuthScreen() {
   return (
     <main className="relative min-h-[100svh] overflow-hidden">
       <div className="login-space-scene pointer-events-none fixed inset-0" aria-hidden>
-        <video
-          className="login-earth-video"
-          src={earthVideo.url}
-          poster={earthPoster.url}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
+        <img
+          className="login-earth-video object-cover w-full h-full"
+          src={loginBg}
+          alt="Earth background"
         />
         <div className="login-earth-veil" />
       </div>
